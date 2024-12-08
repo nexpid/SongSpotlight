@@ -1,4 +1,4 @@
-name = "cloudsync"
+name = "songspotlight"
 main = "src/index.ts"
 compatibility_date = "2024-11-16"
 compatibility_flags = [ "nodejs_compat_v2" ]
