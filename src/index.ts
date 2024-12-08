@@ -10,7 +10,7 @@ app.use(async (c, next) => {
   await next();
 });
 
-app.get("/", (c) => c.redirect("https://github.com/nexpid/CloudSync", 301));
+app.get("/", (c) => c.redirect("https://github.com/nexpid/SongSpotlight", 301));
 
 app.route("/api", api);
 

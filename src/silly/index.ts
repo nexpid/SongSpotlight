@@ -12,9 +12,9 @@ import {
 let initiated = false,
   doingSilly = false;
 
-const description = `Syncs your Bunny plugins, themes and fonts to the cloud!
-« https://github.com/nexpid/CloudSync »
-« https://bunny.nexpid.xyz/cloud-sync »
+const description = `Show off songs on your Discord profile!
+« https://github.com/nexpid/SongSpotlight »
+« https://bunny.nexpid.xyz/song-spotlight »
 « https://discord.gg/ddcQf3s2Uq »`;
 
 export async function runSilly() {

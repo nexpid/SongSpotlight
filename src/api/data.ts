@@ -1,7 +1,5 @@
-import { decompressData } from "src/lib/db/conversion";
 import {
   getUserData,
-  retrieveUserData,
   saveUserData,
   deleteUserData,
   UserDataSchema,
@@ -63,52 +61,6 @@ data.delete("/", async (c) => {
     return c.json(true);
   } catch (e) {
     return c.text(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-});
-
-// downloadData
-data.get("/raw", async (c) => {
-  // Used as a bypass for iOs users, since RNFS is missing so the file can't be downloaded with code
-  const user = await getUser(
-    c.req.header("Authorization") ?? c.req.query("auth"),
-  );
-  if (!user) return c.text("Unauthorized", HttpStatus.UNAUTHORIZED);
-
-  try {
-    const data = await retrieveUserData(user.userId);
-    if (!data) return c.body(null, HttpStatus.NO_CONTENT);
-
-    const hash = Buffer.from(
-      await crypto.subtle.digest("SHA-1", new TextEncoder().encode(data.data)),
-    )
-      .toString("hex")
-      .slice(0, 8);
-
-    c.header("content-type", "text/plain");
-    c.header(
-      "content-disposition",
-      `attachment; filename="CloudSync_${hash}.txt"`,
-    );
-    c.header("last-modified", data.at);
-    return c.text(data.data);
-  } catch (e) {
-    return c.text(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-});
-
-//decompressRawData
-data.post("/decompress", async (c) => {
-  const user = await getUser(c.req.header("Authorization"));
-  if (!user) return c.text("Unauthorized", HttpStatus.UNAUTHORIZED);
-
-  const rawData = await c.req.text();
-
-  try {
-    Buffer.from(rawData, "base64"); // make sure data is base64
-
-    return c.json(await decompressData(rawData));
-  } catch (e) {
-    return c.text(e.toString(), HttpStatus.BAD_REQUEST);
   }
 });
 
