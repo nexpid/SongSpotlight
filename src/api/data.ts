@@ -8,6 +8,7 @@ import { getUser } from "src/lib/auth";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import { HttpStatus } from "src/lib/http-status";
+import { validateSong } from "src/lib/songs/validate";
 
 const data = new Hono<{ Bindings: Env }>();
 
@@ -34,10 +35,16 @@ data.put(
     if (parsed.error)
       return c.text(parsed.error.toString(), HttpStatus.BAD_REQUEST);
 
-    return parsed.data;
+    return parsed.data.filter((x, i, a) => !a.slice(0, i).includes(x));
   }),
   async (c) => {
     const data = c.req.valid("json");
+
+    const allValidated = await Promise.all(
+      data.map((song) => validateSong(song)),
+    );
+    if (!allValidated.every((x) => x === true))
+      return c.json(allValidated.map((valid, i) => [valid, data[i]]));
 
     const user = await getUser(c.req.header("Authorization"));
     if (!user) return c.text("Unauthorized", HttpStatus.UNAUTHORIZED);
