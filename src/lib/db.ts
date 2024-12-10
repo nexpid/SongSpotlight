@@ -74,7 +74,10 @@ export async function deleteUserData(userId: string) {
   await sql("delete from data where user = ?", [userId]);
 }
 
-export async function getUserData(userId: string): Promise<ApiUserData | null> {
+export async function getUserData(
+  userId: string,
+  isExternal?: boolean,
+): Promise<ApiUserData | null> {
   const data = await sql<{
     user: string;
     version: number;
@@ -86,10 +89,10 @@ export async function getUserData(userId: string): Promise<ApiUserData | null> {
   if (data.version === 1) {
     try {
       const oldData = JSON.parse(data.songs) as v1UserData;
-      const newData = oldData.filter((x) => x !== null) as UserData;
+      const newData = oldData.filter((x) => x !== null).slice(0, 6) as UserData;
 
       const at = new Date().toUTCString();
-      saveUserData(userId, newData, at);
+      if (!isExternal) saveUserData(userId, newData, at);
       return { data: newData, at };
     } catch (e) {
       throw new Error(`Failed to migrate your data to v2: ${e.message}`);

@@ -12,6 +12,8 @@ import { validateSong } from "src/lib/songs/validate";
 
 const data = new Hono<{ Bindings: Env }>();
 
+const DISCORD_EPOCH = 1420070400000;
+
 // getData
 data.get("/", async (c) => {
   const user = await getUser(c.req.header("Authorization"));
@@ -19,6 +21,35 @@ data.get("/", async (c) => {
 
   try {
     const data = await getUserData(user.userId);
+
+    c.header("Last-Modified", data?.at);
+    return c.json(data?.data);
+  } catch (e) {
+    return c.text(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+});
+
+// listData
+data.get("/:id", async (c) => {
+  const id = c.req.param("id");
+
+  // validate snowflake based on https://github.com/vegeta897/snow-stamp/blob/8908d48bcee4883a7c4146bb17aa73b73a9009ba/src/convert.js
+  if (!Number.isInteger(+id))
+    return c.text("User ID is not a valid snowflake", HttpStatus.BAD_REQUEST);
+
+  const snowflake = BigInt(id) >> 22n;
+  if (snowflake < 2592000000n)
+    return c.text("User ID is not a valid snowflake", HttpStatus.BAD_REQUEST);
+
+  const biggest = BigInt(Date.now() - DISCORD_EPOCH) << 22n;
+  if (snowflake > biggest)
+    return c.text("User ID is not a valid snowflake", HttpStatus.BAD_REQUEST);
+
+  if (Number.isNaN(new Date(Number(snowflake) + DISCORD_EPOCH).getTime()))
+    return c.text("User ID is not a valid snowflake", HttpStatus.BAD_REQUEST);
+
+  try {
+    const data = await getUserData(id, true);
 
     c.header("Last-Modified", data?.at);
     return c.json(data?.data);
