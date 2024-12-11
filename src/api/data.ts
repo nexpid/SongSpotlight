@@ -14,8 +14,7 @@ const data = new Hono<{ Bindings: Env }>();
 
 const DISCORD_EPOCH = 1420070400000;
 
-// getData
-data.get("/", async (c) => {
+data.get("/", async function getData(c) {
   const user = await getUser(c.req.header("Authorization"));
   if (!user) return c.text("Unauthorized", HttpStatus.UNAUTHORIZED);
 
@@ -23,14 +22,13 @@ data.get("/", async (c) => {
     const data = await getUserData(user.userId);
 
     c.header("Last-Modified", data?.at);
-    return c.json(data?.data);
+    return c.json(data?.data || null);
   } catch (e) {
     return c.text(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });
 
-// listData
-data.get("/:id", async (c) => {
+data.get("/:id", async function listData(c) {
   const id = c.req.param("id");
 
   // validate snowflake based on https://github.com/vegeta897/snow-stamp/blob/8908d48bcee4883a7c4146bb17aa73b73a9009ba/src/convert.js
@@ -52,7 +50,7 @@ data.get("/:id", async (c) => {
     const data = await getUserData(id, true);
 
     c.header("Last-Modified", data?.at);
-    return c.json(data?.data);
+    return c.json(data?.data || null);
   } catch (e) {
     return c.text(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
   }
@@ -68,7 +66,7 @@ data.put(
 
     return parsed.data.filter((x, i, a) => !a.slice(0, i).includes(x));
   }),
-  async (c) => {
+  async function saveData(c) {
     const data = c.req.valid("json");
 
     const allValidated = await Promise.all(
@@ -89,8 +87,7 @@ data.put(
   },
 );
 
-// deleteData
-data.delete("/", async (c) => {
+data.delete("/", async function deleteData(c) {
   const user = await getUser(c.req.header("Authorization"));
   if (!user) return c.text("Unauthorized", HttpStatus.UNAUTHORIZED);
 
