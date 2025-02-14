@@ -1,13 +1,13 @@
 import { Resvg, initWasm } from "@resvg/resvg-wasm";
 import resvgWasm from "@resvg/resvg-wasm/index_bg.wasm";
-import { SillyService } from "./service";
-import { env } from "src/lib/env";
 import {
   CDNRoutes,
   ImageFormat,
   RouteBases,
   Routes,
 } from "discord-api-types/v10";
+import { env } from "src/lib/env";
+import { SillyService } from "./service";
 
 let initiated = false,
   doingSilly = false;
@@ -37,10 +37,12 @@ export async function runSilly() {
 
   const icon = SillyService.getIcon()
     .replace(/#FF0000/g, colors.bg)
+    .replace(/#FFFF00/g, colors.bgWhiter)
     .replace(/#00FF00/g, colors.cloud)
     .replace(/#0000FF/g, colors.cloudOutline);
   const banner = SillyService.getBanner()
     .replace(/#FF0000/g, colors.bg)
+    .replace(/#FFFF00/g, colors.bgWhiter)
     .replace(/#00FF00/g, colors.cloud)
     .replace(/#0000FF/g, colors.cloudOutline);
 
